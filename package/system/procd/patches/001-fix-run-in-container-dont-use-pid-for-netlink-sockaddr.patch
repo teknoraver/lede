@@ -1,0 +1,26 @@
+From 21b9c41589122798a8b9120454739488482c3318 Mon Sep 17 00:00:00 2001
+From: Matteo Croce <matteo.croce@canonical.com>
+Date: Mon, 29 Aug 2016 11:38:37 +0200
+Subject: [PATCH] don't use PID in sockaddr
+
+fix use in a container
+---
+ plug/hotplug.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/plug/hotplug.c b/plug/hotplug.c
+index 8595915..1e0c352 100644
+--- a/plug/hotplug.c
++++ b/plug/hotplug.c
+@@ -586,7 +586,7 @@ void hotplug(char *rules)
+ 	rule_file = strdup(rules);
+ 	memset(&nls,0,sizeof(struct sockaddr_nl));
+ 	nls.nl_family = AF_NETLINK;
+-	nls.nl_pid = getpid();
++	nls.nl_pid = 0;
+ 	nls.nl_groups = -1;
+ 
+ 	if ((hotplug_fd.fd = socket(PF_NETLINK, SOCK_DGRAM | SOCK_CLOEXEC, NETLINK_KOBJECT_UEVENT)) == -1) {
+-- 
+2.7.4
+
