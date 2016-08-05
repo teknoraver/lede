@@ -7,7 +7,7 @@ fgrep -sq '/ overlay ro,' /proc/mounts && {
 }
 
 export PATH="%PATH%"
-export HOME=$(grep -e "^${USER:-root}:" /etc/passwd | cut -d ":" -f 6)
+export HOME=$(awk -F: "/^${USER:-root}:/{print\$6}" /etc/passwd)
 export HOME=${HOME:-/root}
 export PS1='\u@\h:\w\$ '
 
@@ -22,6 +22,7 @@ alias ll='ls -alF --color=auto'
 
 [ -x /usr/bin/arp ] || arp() { cat /proc/net/arp; }
 [ -x /usr/bin/ldd ] || ldd() { LD_TRACE_LOADED_OBJECTS=1 $*; }
+[ -x /usr/bin/sudo ] || alias sudo=
 
 [ -n "$FAILSAFE" ] || {
 	for FILE in /etc/profile.d/*.sh; do
