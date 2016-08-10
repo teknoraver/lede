@@ -94,6 +94,8 @@ fs-types-$(CONFIG_TARGET_ROOTFS_JFFS2_NAND) += $(addprefix jffs2-nand-,$(NAND_BL
 fs-types-$(CONFIG_TARGET_ROOTFS_EXT4FS) += ext4
 fs-types-$(CONFIG_TARGET_ROOTFS_ISO) += iso
 fs-types-$(CONFIG_TARGET_ROOTFS_UBIFS) += ubifs
+fs-types-$(CONFIG_TARGET_ROOTFS_SNAP) += snap
+
 fs-subtypes-$(CONFIG_TARGET_ROOTFS_JFFS2) += $(addsuffix -raw,$(addprefix jffs2-,$(JFFS2_BLOCKSIZE)))
 
 TARGET_FILESYSTEMS := $(fs-types-y)
@@ -198,6 +200,41 @@ endef
 
 $(eval $(foreach S,$(JFFS2_BLOCKSIZE),$(call Image/mkfs/jffs2/template,$(S))))
 $(eval $(foreach S,$(NAND_BLOCKSIZE),$(call Image/mkfs/jffs2-nand/template,$(S))))
+
+ifdef CONFIG_TARGET_ROOTFS_SNAP
+  SNAPARCH:=$(ARCH)
+
+  ifeq ($(SNAPARCH),x86_64)
+    SNAPARCH:=amd64
+  endif
+  ifeq ($(SNAPARCH),aarch64)
+    SNAPARCH:=arm64
+  endif
+  ifeq ($(SNAPARCH),arm)
+    SNAPARCH:=armhf
+  endif
+endif
+
+define Image/mkfs/snap
+	rm -rf $(PKG_BUILD_DIR)/snap
+	$(CP) $(TOPDIR)/target/linux/generic/image/snap $(PKG_BUILD_DIR)
+	sed -i 's/%ARCH%/$(SNAPARCH)/' $(PKG_BUILD_DIR)/snap/meta/snap.yaml
+	# no -Xbcj because of LEDE issue #251:
+	# https://github.com/lede-project/source/issues/251
+	$(STAGING_DIR_HOST)/bin/mksquashfs4 $(PKG_BUILD_DIR)/snap $@ \
+		-noappend -root-owned \
+		-comp xz $(LZMA_XZ_OPTIONS) \
+		-processors $(if $(CONFIG_PKG_BUILD_JOBS),$(CONFIG_PKG_BUILD_JOBS),1) \
+		$(if $(SOURCE_DATE_EPOCH),-fixed-time $(SOURCE_DATE_EPOCH))
+	$(LN) ../root-$(BOARD)/ $(PKG_BUILD_DIR)/rootfs
+	$(STAGING_DIR_HOST)/bin/mksquashfs4 $(PKG_BUILD_DIR)/rootfs/ $@ \
+		-keep-as-directory -root-owned \
+		-comp xz $(LZMA_XZ_OPTIONS) \
+		-processors $(if $(CONFIG_PKG_BUILD_JOBS),$(CONFIG_PKG_BUILD_JOBS),1) \
+		$(if $(SOURCE_DATE_EPOCH),-fixed-time $(SOURCE_DATE_EPOCH))
+	$(RM) $(PKG_BUILD_DIR)/rootfs
+endef
+
 
 define Image/mkfs/squashfs
 	$(STAGING_DIR_HOST)/bin/mksquashfs4 $(call mkfs_target_dir,$(1)) $@ \

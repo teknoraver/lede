@@ -143,6 +143,11 @@ menu "Target Images"
 			default 64 if LOW_MEMORY_FOOTPRINT
 			default 256
 
+	config TARGET_ROOTFS_SNAP
+		bool "snap"
+		help
+		  Build OpenWrt as a snap (http://snapcraft.io/).
+
 	menuconfig TARGET_ROOTFS_UBIFS
 		bool "ubifs"
 		default y if USES_UBIFS

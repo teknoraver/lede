@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Copyright (C) 2016 Canonical Ltd.
+
+dir=$(mktemp -d -p $SNAP_DATA)
+root=$SNAP/rootfs
+
+mkdir -p $dir/var/run $dir/run $dir/tmp $SNAP_DATA/overlay
+
+[ -d $SNAP_DATA/etc-rw ] || cp -fr $root/etc $SNAP_DATA/etc-rw
+
+exec unshare --fork --mount --pid --uts sh -c "
+mount --bind $SNAP_DATA/overlay $root/overlay
+mount --bind $SNAP_DATA/etc-rw $root/etc
+mount --bind $dir/run $root/run
+mount --bind $dir/tmp $root/tmp
+mount --bind $dir/var $root/var
+mount --bind /dev $root/dev
+exec chroot $root/ sh -c 'mount -t sysfs sysfs /sys && exec /sbin/init'"

@@ -1,0 +1,19 @@
+apps:
+  debug-run:
+    command: /bin/command-init.wrapper
+  init:
+    command: /bin/command-init.wrapper
+    daemon: simple
+  sh:
+    command: /bin/command-sh.wrapper
+architectures:
+- %ARCH%
+confinement: devmode
+description: |
+  OpenWrt is a Linux distribution for embedded devices like access gateways,
+  wireless access points, broadband modem and routers, featuring a powerful
+  web interface and state of the art WiFi networking.
+  https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/openwrt/+ref/master
+name: openwrt
+summary: a Linux distribution for WiFi routers
+version: 15.05.1-1
