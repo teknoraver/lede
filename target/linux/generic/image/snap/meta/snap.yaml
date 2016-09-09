@@ -1,11 +1,11 @@
 apps:
   debug-run:
-    command: /bin/command-init.wrapper
+    command: bin/command-init.wrapper
   init:
-    command: /bin/command-init.wrapper
+    command: bin/command-init.wrapper
     daemon: simple
   sh:
-    command: /bin/command-sh.wrapper
+    command: bin/command-sh.wrapper
 architectures:
 - %ARCH%
 confinement: devmode
